@@ -10,7 +10,9 @@ export default function Dashboard() {
 
   const [prompt, setPrompt] = useState("");
   const [generated, setGenerated] = useState<any>(null);
+
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -63,6 +65,50 @@ AI Notes:
 
       setLoading(false);
     }, 1000);
+  };
+
+  const saveStrategy = async () => {
+    if (!generated) return;
+
+    try {
+      setSaving(true);
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        alert("Please login first");
+        return;
+      }
+
+      const res = await fetch("/api/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          prompt,
+          strategy: generated.strategy,
+          score: generated.score,
+          winrate: generated.winrate,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert("Strategy Saved ✅");
+      } else {
+        alert("Error saving strategy");
+      }
+    } catch (error) {
+      console.log(error);
+      alert("Something went wrong");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -173,6 +219,15 @@ AI Notes:
                 <div className="bg-gray-100 p-4 rounded-xl whitespace-pre-wrap">
                   {generated.strategy}
                 </div>
+
+                <button
+                  onClick={saveStrategy}
+                  className="mt-4 bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded-xl"
+                >
+                  {saving
+                    ? "Saving..."
+                    : "Save Strategy"}
+                </button>
 
               </div>
             )}
