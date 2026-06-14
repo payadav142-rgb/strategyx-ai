@@ -14,6 +14,12 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const [stats, setStats] = useState({
+    total: 0,
+    avgScore: 0,
+    avgWinrate: 0,
+  });
+
   useEffect(() => {
     const getUser = async () => {
       const {
@@ -26,6 +32,41 @@ export default function Dashboard() {
       }
 
       setEmail(user.email || "");
+
+      const res = await fetch("/api/strategies");
+      const json = await res.json();
+
+      const strategies = json.data || [];
+
+      const total = strategies.length;
+
+      const avgScore =
+        total > 0
+          ? Math.round(
+              strategies.reduce(
+                (sum: number, item: any) =>
+                  sum + (item.score || 0),
+                0
+              ) / total
+            )
+          : 0;
+
+      const avgWinrate =
+        total > 0
+          ? Math.round(
+              strategies.reduce(
+                (sum: number, item: any) =>
+                  sum + (item.winrate || 0),
+                0
+              ) / total
+            )
+          : 0;
+
+      setStats({
+        total,
+        avgScore,
+        avgWinrate,
+      });
     };
 
     getUser();
@@ -100,6 +141,12 @@ AI Notes:
 
       if (data.success) {
         alert("Strategy Saved ✅");
+
+        setStats((prev) => ({
+          total: prev.total + 1,
+          avgScore: generated.score,
+          avgWinrate: generated.winrate,
+        }));
       } else {
         alert("Error saving strategy");
       }
@@ -126,7 +173,6 @@ AI Notes:
             Welcome Back 🚀
           </h1>
 
-          {/* STATS */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
             <div className="bg-white p-6 rounded-2xl shadow">
@@ -135,7 +181,7 @@ AI Notes:
               </p>
 
               <h2 className="text-3xl font-bold mt-2">
-                0
+                {stats.total}
               </h2>
             </div>
 
@@ -145,7 +191,7 @@ AI Notes:
               </p>
 
               <h2 className="text-3xl font-bold mt-2">
-                82
+                {stats.avgScore}
               </h2>
             </div>
 
@@ -155,13 +201,12 @@ AI Notes:
               </p>
 
               <h2 className="text-3xl font-bold mt-2">
-                71%
+                {stats.avgWinrate}%
               </h2>
             </div>
 
           </div>
 
-          {/* ACCOUNT INFO */}
           <div className="mt-8 bg-white p-6 rounded-2xl shadow">
 
             <h2 className="text-xl font-bold mb-4">
@@ -178,7 +223,6 @@ AI Notes:
 
           </div>
 
-          {/* AI GENERATOR */}
           <div className="mt-8 bg-white p-6 rounded-2xl shadow">
 
             <h2 className="text-xl font-bold mb-4">
