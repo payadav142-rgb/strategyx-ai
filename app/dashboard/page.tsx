@@ -73,9 +73,15 @@ export default function Dashboard() {
   }, []);
 
   const generateStrategy = async () => {
-    setLoading(true);
+  setLoading(true);
 
-    setTimeout(() => {
+  setTimeout(() => {
+    const text = prompt.toLowerCase();
+
+    if (
+      text.includes("btc") ||
+      text.includes("bitcoin")
+    ) {
       setGenerated({
         strategy: `
 BTC Scalping Strategy
@@ -94,19 +100,102 @@ Exit Rules:
 
 Risk Management:
 - Risk only 1% per trade
-- Avoid major news events
-
-AI Notes:
-- Best for BTC and ETH
-- Performs well in trending markets
 `,
         score: 82,
         winrate: 71,
       });
+    } else if (
+      text.includes("eth") ||
+      text.includes("ethereum")
+    ) {
+      setGenerated({
+        strategy: `
+ETH Trend Strategy
 
-      setLoading(false);
-    }, 1000);
-  };
+• Timeframe: 15 Minute
+• MACD
+• EMA: 200
+
+Entry Rules:
+- MACD Bullish Cross
+- Price above EMA 200
+
+Exit Rules:
+- Take Profit: 3%
+- Stop Loss: 1.5%
+`,
+        score: 85,
+        winrate: 74,
+      });
+    } else if (
+      text.includes("gold") ||
+      text.includes("xauusd")
+    ) {
+      setGenerated({
+        strategy: `
+Gold Scalping Strategy
+
+• Timeframe: 1 Minute
+• Bollinger Bands
+• RSI
+
+Entry Rules:
+- Price touches lower band
+- RSI below 30
+
+Exit Rules:
+- Take Profit: 20 pips
+- Stop Loss: 10 pips
+`,
+        score: 79,
+        winrate: 68,
+      });
+    } else if (
+      text.includes("forex") ||
+      text.includes("eurusd")
+    ) {
+      setGenerated({
+        strategy: `
+Forex Trend Strategy
+
+• Timeframe: 30 Minute
+• EMA 100
+• MACD
+
+Entry Rules:
+- EMA Trend Confirmation
+- MACD Cross
+
+Exit Rules:
+- Risk Reward 1:2
+`,
+        score: 80,
+        winrate: 70,
+      });
+    } else {
+      setGenerated({
+        strategy: `
+Universal Trading Strategy
+
+• RSI 14
+• EMA 50
+
+Entry Rules:
+- RSI Oversold
+- Trend Confirmation
+
+Exit Rules:
+- TP 2%
+- SL 1%
+`,
+        score: 75,
+        winrate: 65,
+      });
+    }
+
+    setLoading(false);
+  }, 1000);
+};
 
   const saveStrategy = async () => {
     if (!generated) return;
@@ -260,7 +349,7 @@ AI Notes:
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Create a BTC scalping strategy using RSI and EMA"
+              placeholder="BTC Scalping, ETH Trend, Gold Scalping, Forex Strategy..."
               className="w-full border-2 border-gray-200 rounded-2xl p-4 h-32 focus:outline-none focus:border-orange-500"
             />
 
