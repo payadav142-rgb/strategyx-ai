@@ -16,22 +16,55 @@ export default function StrategiesPage() {
   const [data, setData] = useState<Strategy[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchStrategies = async () => {
+    try {
+      const res = await fetch("/api/strategies");
+      const json = await res.json();
+
+      setData(json.data || []);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchStrategies = async () => {
-      try {
-        const res = await fetch("/api/strategies");
-        const json = await res.json();
-
-        setData(json.data || []);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchStrategies();
   }, []);
+
+  const deleteStrategy = async (id: string) => {
+    const confirmed = window.confirm(
+      "Delete this strategy?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch("/api/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      const result = await res.json();
+
+      if (result.success) {
+        setData((prev) =>
+          prev.filter((item) => item.id !== id)
+        );
+
+        alert("Strategy Deleted ✅");
+      } else {
+        alert("Delete Failed");
+      }
+    } catch (error) {
+      console.log(error);
+      alert("Something went wrong");
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -44,9 +77,17 @@ export default function StrategiesPage() {
 
         <div className="p-8">
 
-          <h1 className="text-3xl font-bold mb-6">
-            Saved Strategies
-          </h1>
+          <div className="flex justify-between items-center mb-6">
+
+            <h1 className="text-3xl font-bold">
+              Saved Strategies
+            </h1>
+
+            <div className="bg-orange-100 text-orange-600 px-4 py-2 rounded-xl font-semibold">
+              {data.length} Strategies
+            </div>
+
+          </div>
 
           {loading && (
             <div className="bg-white p-6 rounded-2xl shadow">
@@ -68,19 +109,32 @@ export default function StrategiesPage() {
                 className="bg-white p-6 rounded-2xl shadow"
               >
 
-                <div className="flex gap-3 mb-4">
+                <div className="flex justify-between items-start">
 
-                  <span className="bg-green-100 px-3 py-1 rounded-lg">
-                    Score {item.score}
-                  </span>
+                  <div className="flex gap-3">
 
-                  <span className="bg-blue-100 px-3 py-1 rounded-lg">
-                    Winrate {item.winrate}%
-                  </span>
+                    <span className="bg-green-100 px-3 py-1 rounded-lg">
+                      Score {item.score}
+                    </span>
+
+                    <span className="bg-blue-100 px-3 py-1 rounded-lg">
+                      Winrate {item.winrate}%
+                    </span>
+
+                  </div>
+
+                  <button
+                    onClick={() =>
+                      deleteStrategy(item.id)
+                    }
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+                  >
+                    Delete
+                  </button>
 
                 </div>
 
-                <p className="font-semibold mb-2">
+                <p className="font-semibold mt-4 mb-2">
                   {item.prompt}
                 </p>
 
