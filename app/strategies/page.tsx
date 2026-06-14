@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { supabase } from "../../app/lib/supabase";
 import Sidebar from "../../components/Sidebar";
 import Topbar from "../../components/Topbar";
 
@@ -18,7 +19,19 @@ export default function StrategiesPage() {
 
   const fetchStrategies = async () => {
     try {
-      const res = await fetch("/api/strategies");
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        window.location.href = "/auth";
+        return;
+      }
+
+      const res = await fetch(
+        `/api/strategies?userId=${user.id}`
+      );
+
       const json = await res.json();
 
       setData(json.data || []);
@@ -68,17 +81,13 @@ export default function StrategiesPage() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-
       <Sidebar />
 
       <div className="flex-1">
-
         <Topbar email="" />
 
         <div className="p-8">
-
           <div className="flex justify-between items-center mb-6">
-
             <h1 className="text-3xl font-bold">
               Saved Strategies
             </h1>
@@ -86,7 +95,6 @@ export default function StrategiesPage() {
             <div className="bg-orange-100 text-orange-600 px-4 py-2 rounded-xl font-semibold">
               {data.length} Strategies
             </div>
-
           </div>
 
           {loading && (
@@ -102,17 +110,13 @@ export default function StrategiesPage() {
           )}
 
           <div className="grid gap-4">
-
             {data.map((item) => (
               <div
                 key={item.id}
                 className="bg-white p-6 rounded-2xl shadow"
               >
-
                 <div className="flex justify-between items-start">
-
                   <div className="flex gap-3">
-
                     <span className="bg-green-100 px-3 py-1 rounded-lg">
                       Score {item.score}
                     </span>
@@ -120,7 +124,6 @@ export default function StrategiesPage() {
                     <span className="bg-blue-100 px-3 py-1 rounded-lg">
                       Winrate {item.winrate}%
                     </span>
-
                   </div>
 
                   <button
@@ -131,7 +134,6 @@ export default function StrategiesPage() {
                   >
                     Delete
                   </button>
-
                 </div>
 
                 <p className="font-semibold mt-4 mb-2">
@@ -141,16 +143,11 @@ export default function StrategiesPage() {
                 <div className="bg-gray-100 p-4 rounded-xl whitespace-pre-wrap">
                   {item.strategy}
                 </div>
-
               </div>
             ))}
-
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }

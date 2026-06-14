@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../../components/Sidebar";
 import Topbar from "../../components/Topbar";
+import { supabase } from "../lib/supabase";
 
 export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
@@ -17,7 +18,16 @@ export default function AnalyticsPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const res = await fetch("/api/strategies");
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          window.location.href = "/auth";
+          return;
+        }
+
+        const res = await fetch(`/api/strategies?userId=${user.id}`);
         const json = await res.json();
 
         const data = json.data || [];

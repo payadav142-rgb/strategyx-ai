@@ -33,7 +33,7 @@ export default function Dashboard() {
 
       setEmail(user.email || "");
 
-      const res = await fetch("/api/strategies");
+      const res = await fetch(`/api/strategies?userId=${user.id}`);
       const json = await res.json();
 
       const strategies = json.data || [];
@@ -169,13 +169,19 @@ AI Notes:
 
         <div className="p-8">
 
-          <h1 className="text-3xl font-bold mb-6">
-            Welcome Back 🚀
-          </h1>
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-8 rounded-3xl shadow-lg mb-8">
+  <h1 className="text-4xl font-bold">
+    Welcome Back 🚀
+  </h1>
+
+  <p className="mt-2 text-orange-100">
+    Generate, Save and Analyze Trading Strategies with AI
+  </p>
+</div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-            <div className="bg-white p-6 rounded-2xl shadow">
+            <div className="bg-white p-6 rounded-3xl shadow-lg border hover:shadow-xl transition">
               <p className="text-gray-500">
                 Total Strategies
               </p>
@@ -185,7 +191,7 @@ AI Notes:
               </h2>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl shadow">
+            <div className="bg-white p-6 rounded-3xl shadow-lg border hover:shadow-xl transition">
               <p className="text-gray-500">
                 Average Score
               </p>
@@ -195,7 +201,7 @@ AI Notes:
               </h2>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl shadow">
+            <div className="bg-white p-6 rounded-3xl shadow-lg border hover:shadow-xl transition">
               <p className="text-gray-500">
                 Win Rate
               </p>
@@ -212,7 +218,29 @@ AI Notes:
             <h2 className="text-xl font-bold mb-4">
               Account Information
             </h2>
+<div className="mt-8 bg-white p-6 rounded-3xl shadow-lg">
 
+  <h2 className="text-xl font-bold mb-4">
+    Recent Activity
+  </h2>
+
+  <div className="space-y-3">
+
+    <div className="bg-gray-100 p-3 rounded-xl">
+      ✅ Strategies Created: {stats.total}
+    </div>
+
+    <div className="bg-gray-100 p-3 rounded-xl">
+      ⭐ Average Score: {stats.avgScore}
+    </div>
+
+    <div className="bg-gray-100 p-3 rounded-xl">
+      🏆 Win Rate: {stats.avgWinrate}%
+    </div>
+
+  </div>
+
+</div>
             <p className="text-gray-600">
               Logged in as:
             </p>
@@ -223,7 +251,7 @@ AI Notes:
 
           </div>
 
-          <div className="mt-8 bg-white p-6 rounded-2xl shadow">
+          <div className="mt-8 bg-white p-6 rounded-3xl shadow-lg">
 
             <h2 className="text-xl font-bold mb-4">
               AI Strategy Generator
@@ -233,12 +261,12 @@ AI Notes:
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Create a BTC scalping strategy using RSI and EMA"
-              className="w-full border rounded-xl p-4 h-32"
+              className="w-full border-2 border-gray-200 rounded-2xl p-4 h-32 focus:outline-none focus:border-orange-500"
             />
 
             <button
               onClick={generateStrategy}
-              className="mt-4 bg-orange-500 hover:bg-orange-600 text-white px-5 py-3 rounded-xl"
+              className="mt-4 bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-2xl font-semibold"
             >
               {loading
                 ? "Generating..."
@@ -266,7 +294,7 @@ AI Notes:
 
                 <button
                   onClick={saveStrategy}
-                  className="mt-4 bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded-xl"
+                  className="mt-4 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-2xl font-semibold"
                 >
                   {saving
                     ? "Saving..."

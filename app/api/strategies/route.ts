@@ -6,10 +6,22 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export async function GET() {
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+
+  const userId = searchParams.get("userId");
+
+  if (!userId) {
+    return NextResponse.json(
+      { error: "User ID required" },
+      { status: 400 }
+    );
+  }
+
   const { data, error } = await supabase
     .from("strategies")
     .select("*")
+    .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -19,7 +31,5 @@ export async function GET() {
     );
   }
 
-  return NextResponse.json({
-    data,
-  });
+  return NextResponse.json({ data });
 }
