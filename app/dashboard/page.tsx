@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import Sidebar from "../../components/Sidebar";
 import Topbar from "../../components/Topbar";
+import jsPDF from "jspdf";
+
 
 export default function Dashboard() {
   const [email, setEmail] = useState("");
@@ -206,6 +208,30 @@ Exit Rules:
     }, 1000);
   };
 
+const copyStrategy = () => {
+  if (!generated) return;
+
+  navigator.clipboard.writeText(
+    generated.strategy
+  );
+
+  alert("Strategy Copied ✅");
+};
+
+const exportPDF = () => {
+  if (!generated) return;
+
+  const doc = new jsPDF();
+
+  doc.text(
+    generated.strategy,
+    10,
+    10
+  );
+
+  doc.save("strategy.pdf");
+};
+
   const saveStrategy = async () => {
     if (!generated) return;
 
@@ -220,6 +246,8 @@ Exit Rules:
         alert("Please login first");
         return;
       }
+
+      
 
       const res = await fetch("/api/save", {
         method: "POST",
@@ -460,16 +488,30 @@ Exit Rules:
             <div className="bg-gray-100 p-4 rounded-xl whitespace-pre-wrap">
               {generated.strategy}
             </div>
+  <div className="flex gap-3 mt-4">
 
-            <button
-              onClick={saveStrategy}
-              className="mt-4 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-2xl font-semibold"
-            >
-              {saving
-                ? "Saving..."
-                : "Save Strategy"}
-            </button>
+  <button
+    onClick={saveStrategy}
+    className="min-w-[170px] bg-green-500 hover:bg-green-600 text-white py-3 rounded-2xl font-semibold"
+  >
+    {saving ? "Saving..." : "Save Strategy"}
+  </button>
 
+  <button
+    onClick={copyStrategy}
+    className="min-w-[170px] bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-2xl font-semibold"
+  >
+    Copy Strategy
+  </button>
+
+  <button
+    onClick={exportPDF}
+    className="min-w-[170px] bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-2xl font-semibold"
+  >
+    Export PDF
+  </button>
+
+</div>
           </div>
         )}
 
