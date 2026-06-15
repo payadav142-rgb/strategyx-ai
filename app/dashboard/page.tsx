@@ -6,7 +6,6 @@ import Sidebar from "../../components/Sidebar";
 import Topbar from "../../components/Topbar";
 import jsPDF from "jspdf";
 
-
 export default function Dashboard() {
   const [email, setEmail] = useState("");
 
@@ -84,7 +83,8 @@ export default function Dashboard() {
     getUser();
   }, []);
 
-  const generateStrategy = async () => {    setLoading(true);
+  const generateStrategy = async () => {
+    setLoading(true);
 
     setTimeout(() => {
       const text = prompt.toLowerCase();
@@ -207,8 +207,7 @@ Exit Rules:
       setLoading(false);
     }, 1000);
   };
-
-const copyStrategy = () => {
+  const copyStrategy = () => {
   if (!generated) return;
 
   navigator.clipboard.writeText(
@@ -232,295 +231,377 @@ const exportPDF = () => {
   doc.save("strategy.pdf");
 };
 
-  const saveStrategy = async () => {
-    if (!generated) return;
+const deleteStrategy = async (
+  id: string
+) => {
+  const confirmDelete =
+    window.confirm(
+      "Delete this strategy?"
+    );
 
-    try {
-      setSaving(true);
+  if (!confirmDelete) return;
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        alert("Please login first");
-        return;
-      }
-
-      
-
-      const res = await fetch("/api/save", {
+  try {
+    const res = await fetch(
+      "/api/delete",
+      {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          id,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      setRecentStrategies((prev) =>
+        prev.filter(
+          (item) => item.id !== id
+        )
+      );
+
+      setStats((prev) => ({
+        ...prev,
+        total:
+          prev.total > 0
+            ? prev.total - 1
+            : 0,
+      }));
+
+      alert("Deleted ✅");
+    } else {
+      alert("Delete failed");
+    }
+  } catch (error) {
+    console.log(error);
+    alert("Something went wrong");
+  }
+};
+
+const saveStrategy = async () => {
+  if (!generated) return;
+
+  try {
+    setSaving(true);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      alert("Please login first");
+      return;
+    }
+
+    const res = await fetch(
+      "/api/save",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
         },
         body: JSON.stringify({
           user_id: user.id,
           prompt,
-          strategy: generated.strategy,
-          score: generated.score,
-          winrate: generated.winrate,
+          strategy:
+            generated.strategy,
+          score:
+            generated.score,
+          winrate:
+            generated.winrate,
         }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        alert("Strategy Saved ✅");
-
-        setRecentStrategies((prev) => [
-          {
-            id: Date.now(),
-            prompt,
-            score: generated.score,
-            winrate: generated.winrate,
-          },
-          ...prev,
-        ].slice(0, 3));
-
-        setStats((prev) => ({
-          total: prev.total + 1,
-          avgScore: generated.score,
-          avgWinrate: generated.winrate,
-        }));
-      } else {
-        alert("Error saving strategy");
       }
-    } catch (error) {
-      console.log(error);
-      alert("Something went wrong");
-    } finally {
-      setSaving(false);
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      alert("Strategy Saved ✅");
+
+      setRecentStrategies(
+        (prev) =>
+          [
+            {
+              id: Date.now(),
+              prompt,
+              score:
+                generated.score,
+              winrate:
+                generated.winrate,
+            },
+            ...prev,
+          ].slice(0, 3)
+      );
+
+      setStats((prev) => ({
+        total: prev.total + 1,
+        avgScore:
+          generated.score,
+        avgWinrate:
+          generated.winrate,
+      }));
+    } else {
+      alert(
+        "Error saving strategy"
+      );
     }
-  };
+  } catch (error) {
+    console.log(error);
+    alert("Something went wrong");
+  } finally {
+    setSaving(false);
+  }
+};
+return (
+  <div className="flex min-h-screen bg-gray-100">
 
-  return (<div className="flex min-h-screen bg-gray-100">
+    <Sidebar />
 
-  <Sidebar />
+    <div className="flex-1">
 
-  <div className="flex-1">
+      <Topbar email={email} />
 
-    <Topbar email={email} />
+      <div className="p-8">
 
-    <div className="p-8">
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-8 rounded-3xl shadow-lg mb-8">
 
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-8 rounded-3xl shadow-lg mb-8">
+          <h1 className="text-4xl font-bold">
+            Welcome Back 🚀
+          </h1>
 
-        <h1 className="text-4xl font-bold">
-          Welcome Back 🚀
-        </h1>
-
-        <p className="mt-2 text-orange-100">
-          Generate, Save and Analyze Trading Strategies with AI
-        </p>
-
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-        <div className="bg-white p-6 rounded-3xl shadow-lg border">
-          <p className="text-gray-500">
-            Total Strategies
+          <p className="mt-2 text-orange-100">
+            Generate, Save and Analyze Trading Strategies with AI
           </p>
 
-          <h2 className="text-3xl font-bold mt-2">
-            {stats.total}
-          </h2>
         </div>
 
-        <div className="bg-white p-6 rounded-3xl shadow-lg border">
-          <p className="text-gray-500">
-            Average Score
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          <div className="bg-white p-6 rounded-3xl shadow-lg border">
+            <p className="text-gray-500">
+              Total Strategies
+            </p>
+
+            <h2 className="text-3xl font-bold mt-2">
+              {stats.total}
+            </h2>
+          </div>
+
+          <div className="bg-white p-6 rounded-3xl shadow-lg border">
+            <p className="text-gray-500">
+              Average Score
+            </p>
+
+            <h2 className="text-3xl font-bold mt-2">
+              {stats.avgScore}
+            </h2>
+          </div>
+
+          <div className="bg-white p-6 rounded-3xl shadow-lg border">
+            <p className="text-gray-500">
+              Win Rate
+            </p>
+
+            <h2 className="text-3xl font-bold mt-2">
+              {stats.avgWinrate}%
+            </h2>
+          </div>
+
+        </div>
+
+        <div className="mt-8 bg-white p-6 rounded-3xl shadow-lg">
+
+          <h2 className="text-xl font-bold mb-4">
+            Account Information
+          </h2>
+
+          <p className="text-gray-600">
+            Logged in as:
           </p>
 
-          <h2 className="text-3xl font-bold mt-2">
-            {stats.avgScore}
-          </h2>
-        </div>
-
-        <div className="bg-white p-6 rounded-3xl shadow-lg border">
-          <p className="text-gray-500">
-            Win Rate
+          <p className="font-semibold mt-2">
+            {email}
           </p>
 
-          <h2 className="text-3xl font-bold mt-2">
-            {stats.avgWinrate}%
-          </h2>
         </div>
 
-      </div>
+        <div className="mt-8 bg-white p-6 rounded-3xl shadow-lg">
 
-      <div className="mt-8 bg-white p-6 rounded-3xl shadow-lg">
-
-        <h2 className="text-xl font-bold mb-4">
-          Account Information
-        </h2>
-
-        <p className="text-gray-600">
-          Logged in as:
-        </p>
-
-        <p className="font-semibold mt-2">
-          {email}
-        </p>
-
-      </div>
-
-      <div className="mt-8 bg-white p-6 rounded-3xl shadow-lg">
-
-        <h2 className="text-xl font-bold mb-4">
-          Recent Activity
-        </h2>
-
-        <div className="space-y-3">
-
-          <div className="bg-gray-100 p-3 rounded-xl">
-            ✅ Strategies Created: {stats.total}
-          </div>
-
-          <div className="bg-gray-100 p-3 rounded-xl">
-            ⭐ Average Score: {stats.avgScore}
-          </div>
-
-          <div className="bg-gray-100 p-3 rounded-xl">
-            🏆 Win Rate: {stats.avgWinrate}%
-          </div>
-
-        </div>
-
-      </div>
-
-      <div className="mt-8 bg-white p-6 rounded-3xl shadow-lg">
-
-        <div className="flex justify-between items-center mb-4">
-
-          <h2 className="text-xl font-bold">
-            Recent Strategies
+          <h2 className="text-xl font-bold mb-4">
+            Recent Activity
           </h2>
 
-          <span className="text-sm text-gray-500">
-            Latest 3
-          </span>
+          <div className="space-y-3">
+
+            <div className="bg-gray-100 p-3 rounded-xl">
+              ✅ Strategies Created: {stats.total}
+            </div>
+
+            <div className="bg-gray-100 p-3 rounded-xl">
+              ⭐ Average Score: {stats.avgScore}
+            </div>
+
+            <div className="bg-gray-100 p-3 rounded-xl">
+              🏆 Win Rate: {stats.avgWinrate}%
+            </div>
+
+          </div>
 
         </div>
 
-        {recentStrategies.length === 0 ? (
+        <div className="mt-8 bg-white p-6 rounded-3xl shadow-lg">
 
-          <div className="text-gray-500">
-            No saved strategies yet
+          <div className="flex justify-between items-center mb-4">
+
+            <h2 className="text-xl font-bold">
+              Recent Strategies
+            </h2>
+
+            <span className="text-sm text-gray-500">
+              Latest 3
+            </span>
+
           </div>
 
-        ) : (
+          {recentStrategies.length === 0 ? (
 
-          <div className="space-y-4">
+            <div className="text-gray-500">
+              No saved strategies yet
+            </div>
 
-            {recentStrategies.map((item) => (
+          ) : (
 
-              <div
-                key={item.id}
-                className="border rounded-2xl p-4"
-              >
+            <div className="space-y-4">
 
-                <div className="flex gap-3 mb-2">
+              {recentStrategies.map((item) => (
 
-                  <span className="bg-green-100 px-3 py-1 rounded-lg text-sm">
-                    Score {item.score}
-                  </span>
+                <div
+                  key={item.id}
+                  className="border rounded-2xl p-4"
+                >
 
-                  <span className="bg-blue-100 px-3 py-1 rounded-lg text-sm">
-                    Winrate {item.winrate}%
-                  </span>
+                  <div className="flex gap-3 mb-2">
+
+                    <span className="bg-green-100 px-3 py-1 rounded-lg text-sm">
+                      Score {item.score}
+                    </span>
+
+                    <span className="bg-blue-100 px-3 py-1 rounded-lg text-sm">
+                      Winrate {item.winrate}%
+                    </span>
+
+                  </div>
+
+                  <p className="font-semibold">
+                    {item.prompt}
+                  </p>
+
+                  <button
+                    onClick={() =>
+                      deleteStrategy(item.id)
+                    }
+                    className="mt-3 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl"
+                  >
+                    Delete
+                  </button>
 
                 </div>
 
-                <p className="font-semibold">
-                  {item.prompt}
-                </p>
+              ))}
+
+            </div>
+
+          )}
+
+        </div>
+
+        <div className="mt-8 bg-white p-6 rounded-3xl shadow-lg">
+
+          <h2 className="text-xl font-bold mb-4">
+            Smart AI Generator
+          </h2>
+
+          <textarea
+            value={prompt}
+            onChange={(e) =>
+              setPrompt(e.target.value)
+            }
+            placeholder="BTC Scalping, ETH Trend, Gold Scalping, Forex Strategy..."
+            className="w-full border-2 border-gray-200 rounded-2xl p-4 h-32 focus:outline-none focus:border-orange-500"
+          />
+
+          <button
+            onClick={generateStrategy}
+            className="mt-4 bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-2xl font-semibold"
+          >
+            {loading
+              ? "Generating..."
+              : "Generate Strategy"}
+          </button>
+
+          {generated && (
+
+            <div className="mt-6 border-t pt-6">
+
+              <div className="flex gap-4 mb-4">
+
+                <div className="bg-green-100 px-4 py-2 rounded-lg">
+                  Score: {generated.score}
+                </div>
+
+                <div className="bg-blue-100 px-4 py-2 rounded-lg">
+                  Winrate: {generated.winrate}%
+                </div>
 
               </div>
 
-            ))}
+              <div className="bg-gray-100 p-4 rounded-xl whitespace-pre-wrap">
+                {generated.strategy}
+              </div>
 
-          </div>
+              <div className="flex gap-3 mt-4">
 
-        )}
-
-      </div>
-
-      <div className="mt-8 bg-white p-6 rounded-3xl shadow-lg">
-
-        <h2 className="text-xl font-bold mb-4">
-          Smart AI Generator
-        </h2>
-
-        <textarea
-          value={prompt}
-          onChange={(e) =>
-            setPrompt(e.target.value)
-          }
-          placeholder="BTC Scalping, ETH Trend, Gold Scalping, Forex Strategy..."
-          className="w-full border-2 border-gray-200 rounded-2xl p-4 h-32 focus:outline-none focus:border-orange-500"
-        />
                 <button
-          onClick={generateStrategy}
-          className="mt-4 bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-2xl font-semibold"
-        >
-          {loading
-            ? "Generating..."
-            : "Generate Strategy"}
-        </button>
+                  onClick={saveStrategy}
+                  className="min-w-[170px] bg-green-500 hover:bg-green-600 text-white py-3 rounded-2xl font-semibold"
+                >
+                  {saving
+                    ? "Saving..."
+                    : "Save Strategy"}
+                </button>
 
-        {generated && (
-          <div className="mt-6 border-t pt-6">
+                <button
+                  onClick={copyStrategy}
+                  className="min-w-[170px] bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-2xl font-semibold"
+                >
+                  Copy Strategy
+                </button>
 
-            <div className="flex gap-4 mb-4">
+                <button
+                  onClick={exportPDF}
+                  className="min-w-[170px] bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-2xl font-semibold"
+                >
+                  Export PDF
+                </button>
 
-              <div className="bg-green-100 px-4 py-2 rounded-lg">
-                Score: {generated.score}
-              </div>
-
-              <div className="bg-blue-100 px-4 py-2 rounded-lg">
-                Winrate: {generated.winrate}%
               </div>
 
             </div>
 
-            <div className="bg-gray-100 p-4 rounded-xl whitespace-pre-wrap">
-              {generated.strategy}
-            </div>
-  <div className="flex gap-3 mt-4">
+          )}
 
-  <button
-    onClick={saveStrategy}
-    className="min-w-[170px] bg-green-500 hover:bg-green-600 text-white py-3 rounded-2xl font-semibold"
-  >
-    {saving ? "Saving..." : "Save Strategy"}
-  </button>
-
-  <button
-    onClick={copyStrategy}
-    className="min-w-[170px] bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-2xl font-semibold"
-  >
-    Copy Strategy
-  </button>
-
-  <button
-    onClick={exportPDF}
-    className="min-w-[170px] bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-2xl font-semibold"
-  >
-    Export PDF
-  </button>
-
-</div>
-          </div>
-        )}
+        </div>
 
       </div>
 
     </div>
 
   </div>
-
-</div>
-  );
+);
 }
