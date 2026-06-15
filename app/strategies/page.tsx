@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "../../app/lib/supabase";
 import Sidebar from "../../components/Sidebar";
@@ -144,7 +144,15 @@ export default function StrategiesPage() {
 
               <div
                 key={item.id}
-                className="bg-white p-6 rounded-2xl shadow"
+                className="
+  bg-white
+  p-6
+  rounded-3xl
+  shadow-lg
+  border
+  hover:shadow-xl
+  transition
+"
               >
 
                 <div className="flex justify-between items-start">
@@ -161,14 +169,39 @@ export default function StrategiesPage() {
 
                   </div>
 
-                  <button
-                    onClick={() =>
-                      deleteStrategy(item.id)
-                    }
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
-                  >
-                    Delete
-                  </button>
+                  <div className="flex gap-2">
+
+  <Link
+    href={`/strategies/${item.id}`}
+    className="
+      bg-orange-500
+      hover:bg-orange-600
+      text-white
+      px-4
+      py-2
+      rounded-lg
+    "
+  >
+    View
+  </Link>
+
+  <button
+    onClick={() =>
+      deleteStrategy(item.id)
+    }
+    className="
+      bg-red-500
+      hover:bg-red-600
+      text-white
+      px-4
+      py-2
+      rounded-lg
+    "
+  >
+    Delete
+  </button>
+
+</div>
 
                 </div>
 
