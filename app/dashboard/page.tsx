@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import Sidebar from "../../components/Sidebar";
@@ -501,6 +501,12 @@ return (
                   <p className="font-semibold">
                     {item.prompt}
                   </p>
+                  <Link
+  href={`/strategies/${item.id}`}
+  className="mt-3 inline-block bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl"
+>
+  View Strategy
+</Link>
 
                   <button
                     onClick={() =>
