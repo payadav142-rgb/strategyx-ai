@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import jsPDF from "jspdf";
 
 export default function StrategyDetails() {
   const params = useParams();
+  const router = useRouter();
 
   const [strategy, setStrategy] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -73,57 +74,82 @@ export default function StrategyDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+  <div className="min-h-screen bg-gray-100 p-8">
 
-      <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-lg p-8">
+    <div className="max-w-5xl mx-auto">
 
-        <h1 className="text-3xl font-bold mb-6">
+      <button
+        onClick={() => router.back()}
+        className="mb-6 bg-gray-800 hover:bg-gray-900 text-white px-5 py-3 rounded-2xl"
+      >
+        ← Back to Strategies
+      </button>
+
+      <div className="bg-white rounded-3xl shadow-lg border p-8">
+
+        <h1 className="text-4xl font-bold mb-2">
           Strategy Details
         </h1>
 
-        <div className="flex gap-3 mb-6">
+        <p className="text-gray-500 mb-8">
+          Full strategy analysis and metrics
+        </p>
 
-          <span className="bg-green-100 px-4 py-2 rounded-lg">
-            Score {strategy.score}
-          </span>
+        <div className="grid md:grid-cols-2 gap-4 mb-8">
 
-          <span className="bg-blue-100 px-4 py-2 rounded-lg">
-            Winrate {strategy.winrate}%
-          </span>
+          <div className="bg-green-100 p-6 rounded-3xl">
+            <p className="text-gray-600">
+              Strategy Score
+            </p>
+
+            <h2 className="text-4xl font-bold mt-2">
+              {strategy.score}
+            </h2>
+          </div>
+
+          <div className="bg-blue-100 p-6 rounded-3xl">
+            <p className="text-gray-600">
+              Win Rate
+            </p>
+
+            <h2 className="text-4xl font-bold mt-2">
+              {strategy.winrate}%
+            </h2>
+          </div>
 
         </div>
 
-        <div className="mb-6">
+        <div className="bg-orange-50 border border-orange-200 p-6 rounded-3xl mb-6">
 
-          <h2 className="font-bold text-lg">
+          <h2 className="font-bold text-xl mb-3">
             Prompt
           </h2>
 
-          <p className="mt-2">
+          <p className="text-gray-700">
             {strategy.prompt}
           </p>
 
         </div>
 
-        <div className="mb-6">
+        <div className="bg-gray-50 border p-6 rounded-3xl mb-6">
 
-          <h2 className="font-bold text-lg">
+          <h2 className="font-bold text-xl mb-4">
             Strategy
           </h2>
 
-          <div className="bg-gray-100 p-4 rounded-2xl mt-3 whitespace-pre-wrap">
+          <div className="whitespace-pre-wrap leading-7">
             {strategy.strategy}
           </div>
 
         </div>
 
-        <div className="mb-6">
+        <div className="bg-gray-50 border p-6 rounded-3xl mb-8">
 
-          <h2 className="font-bold text-lg">
+          <h2 className="font-bold text-xl mb-3">
             Created At
           </h2>
 
-          <p className="mt-2">
+          <p>
             {new Date(
               strategy.created_at
             ).toLocaleString()}
@@ -131,18 +157,18 @@ export default function StrategyDetails() {
 
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
 
           <button
             onClick={copyStrategy}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-2xl"
+            className="min-w-[180px] bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-2xl font-semibold"
           >
             Copy Strategy
           </button>
 
           <button
             onClick={exportPDF}
-            className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-2xl"
+            className="min-w-[180px] bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-2xl font-semibold"
           >
             Export PDF
           </button>
@@ -152,5 +178,7 @@ export default function StrategyDetails() {
       </div>
 
     </div>
-  );
+
+  </div>
+);
 }
