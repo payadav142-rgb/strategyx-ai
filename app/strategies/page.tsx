@@ -18,6 +18,15 @@ export default function StrategiesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
+
+  const [editing, setEditing] =
+  useState<any>(null);
+
+const [editPrompt, setEditPrompt] =
+  useState("");
+
+const [editStrategy, setEditStrategy] =
+  useState("");
   const fetchStrategies = async () => {
     try {
       const {
@@ -46,6 +55,20 @@ export default function StrategiesPage() {
   useEffect(() => {
     fetchStrategies();
   }, []);
+
+
+  const openEdit = (item: any) => {
+  setEditing(item);
+
+  setEditPrompt(
+    item.prompt || ""
+  );
+
+  setEditStrategy(
+    item.strategy || ""
+  );
+};
+
 
   const deleteStrategy = async (id: string) => {
     const confirmed = window.confirm(
@@ -79,6 +102,53 @@ export default function StrategiesPage() {
       alert("Something went wrong");
     }
   };
+  const saveChanges = async () => {
+  try {
+    const res = await fetch(
+      "/api/update",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          id: editing.id,
+          prompt: editPrompt,
+          strategy: editStrategy,
+        }),
+      }
+    );
+
+    const data =
+      await res.json();
+
+    if (data.success) {
+
+      setData((prev) =>
+        prev.map((item) =>
+          item.id === editing.id
+            ? {
+                ...item,
+                prompt:
+                  editPrompt,
+                strategy:
+                  editStrategy,
+              }
+            : item
+        )
+      );
+
+      alert(
+        "Updated Successfully ✅"
+      );
+
+      setEditing(null);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   const filteredStrategies = data.filter((item) =>
     item.prompt
@@ -87,6 +157,7 @@ export default function StrategiesPage() {
   );
 
   return (
+  <>
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
 
@@ -186,6 +257,22 @@ export default function StrategiesPage() {
   </Link>
 
   <button
+  onClick={() =>
+    openEdit(item)
+  }
+  className="
+    bg-yellow-500
+    hover:bg-yellow-600
+    text-white
+    px-4
+    py-2
+    rounded-lg
+  "
+>
+  Edit
+</button>
+
+  <button
     onClick={() =>
       deleteStrategy(item.id)
     }
@@ -222,5 +309,57 @@ export default function StrategiesPage() {
         </div>
       </div>
     </div>
+   {editing && (
+
+<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+  <div className="bg-white w-[700px] rounded-3xl p-8">
+
+    <h2 className="text-2xl font-bold mb-6">
+      Edit Strategy
+    </h2>
+
+    <input
+      value={editPrompt}
+      onChange={(e) =>
+        setEditPrompt(e.target.value)
+      }
+      className="w-full border p-4 rounded-xl mb-4"
+      placeholder="Prompt"
+    />
+
+    <textarea
+      value={editStrategy}
+      onChange={(e) =>
+        setEditStrategy(e.target.value)
+      }
+      className="w-full border p-4 rounded-xl h-60 mb-4"
+      placeholder="Strategy"
+    />
+
+    <div className="flex gap-3">
+
+      <button
+        onClick={saveChanges}
+        className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl"
+      >
+        Save Changes
+      </button>
+
+      <button
+        onClick={() => setEditing(null)}
+        className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl"
+      >
+        Cancel
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+)}
+    </>
   );
 }

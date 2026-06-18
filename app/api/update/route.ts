@@ -23,25 +23,20 @@ export async function POST(req: Request) {
       .eq("id", id);
 
     if (error) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: error.message,
-        },
-        { status: 500 }
-      );
+      return NextResponse.json({
+        success: false,
+        error: error.message,
+      });
     }
 
     return NextResponse.json({
       success: true,
     });
-
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-      },
-      { status: 500 }
-    );
+    console.log(error);
+
+    return NextResponse.json({
+      success: false,
+    });
   }
 }
