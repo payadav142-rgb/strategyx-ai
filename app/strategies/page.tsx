@@ -11,12 +11,15 @@ interface Strategy {
   strategy: string;
   score: number;
   winrate: number;
+  category: string;
 }
 
 export default function StrategiesPage() {
   const [data, setData] = useState<Strategy[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] =
+  useState("All");
 
 
   const [editing, setEditing] =
@@ -150,11 +153,27 @@ const [editStrategy, setEditStrategy] =
   }
 };
 
-  const filteredStrategies = data.filter((item) =>
-    item.prompt
-      ?.toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  const filteredStrategies =
+  data.filter((item) => {
+
+    const matchSearch =
+      item.prompt
+        ?.toLowerCase()
+        .includes(
+          search.toLowerCase()
+        );
+
+    const matchCategory =
+      categoryFilter === "All"
+        ? true
+        : item.category ===
+          categoryFilter;
+
+    return (
+      matchSearch &&
+      matchCategory
+    );
+  });
 
   return (
   <>
@@ -195,6 +214,28 @@ const [editStrategy, setEditStrategy] =
               "
             />
           </div>
+          <div className="mb-6">
+  <select
+    value={categoryFilter}
+    onChange={(e) =>
+      setCategoryFilter(e.target.value)
+    }
+    className="
+      w-full
+      border
+      rounded-2xl
+      p-4
+      bg-white
+    "
+  >
+    <option value="All">All Categories</option>
+    <option value="Crypto">Crypto</option>
+    <option value="Forex">Forex</option>
+    <option value="Stocks">Stocks</option>
+    <option value="Gold">Gold</option>
+    <option value="Options">Options</option>
+  </select>
+</div>
 
           {loading && (
             <div className="bg-white p-6 rounded-2xl shadow">
@@ -237,6 +278,9 @@ const [editStrategy, setEditStrategy] =
                     <span className="bg-blue-100 px-3 py-1 rounded-lg">
                       Winrate {item.winrate}%
                     </span>
+                    <span className="bg-purple-100 px-3 py-1 rounded-lg">
+  {item.category}
+</span>
 
                   </div>
 

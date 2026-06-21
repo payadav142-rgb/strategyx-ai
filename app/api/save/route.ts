@@ -10,21 +10,34 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
+    const {
+      user_id,
+      prompt,
+      strategy,
+      score,
+      winrate,
+      category,
+    } = body;
+
     const { error } = await supabase
       .from("strategies")
       .insert([
         {
-          user_id: body.user_id,
-          prompt: body.prompt,
-          strategy: body.strategy,
-          score: body.score,
-          winrate: body.winrate,
+          user_id,
+          prompt,
+          strategy,
+          score,
+          winrate,
+          category: category || "General",
         },
       ]);
 
     if (error) {
       return NextResponse.json(
-        { error: error.message },
+        {
+          success: false,
+          error: error.message,
+        },
         { status: 500 }
       );
     }
@@ -32,9 +45,15 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
     });
+
   } catch (error) {
+    console.log(error);
+
     return NextResponse.json(
-      { error: "Server Error" },
+      {
+        success: false,
+        error: "Server Error",
+      },
       { status: 500 }
     );
   }

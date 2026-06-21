@@ -10,6 +10,8 @@ export default function Dashboard() {
   const [email, setEmail] = useState("");
 
   const [prompt, setPrompt] = useState("");
+  const [category, setCategory] =
+  useState("Crypto");
   const [generated, setGenerated] = useState<any>(null);
 
   const [loading, setLoading] = useState(false);
@@ -530,8 +532,47 @@ return (
         <div className="mt-8 bg-white p-6 rounded-3xl shadow-lg">
 
           <h2 className="text-xl font-bold mb-4">
-            Smart AI Generator
-          </h2>
+  Smart AI Generator
+</h2>
+
+<select
+  value={category}
+  onChange={(e) =>
+    setCategory(e.target.value)
+  }
+  className="
+    w-full
+    border-2
+    border-gray-200
+    rounded-2xl
+    p-4
+    mb-4
+    focus:outline-none
+    focus:border-orange-500
+  "
+>
+  <option value="Crypto">
+    Crypto
+  </option>
+
+  <option value="Forex">
+    Forex
+  </option>
+
+  <option value="Stocks">
+    Stocks
+  </option>
+
+  <option value="Gold">
+    Gold
+  </option>
+
+  <option value="Options">
+    Options
+  </option>
+</select>
+
+
 
           <textarea
             value={prompt}
