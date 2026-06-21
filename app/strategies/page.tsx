@@ -13,13 +13,18 @@ interface Strategy {
   score: number;
   winrate: number;
   category: string;
+  favorite: boolean;
 }
 
 export default function StrategiesPage() {
-  const [data, setData] = useState<Strategy[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] =
+    useState<Strategy[]>([]);
 
-  const [search, setSearch] = useState("");
+  const [loading, setLoading] =
+    useState(true);
+
+  const [search, setSearch] =
+    useState("");
 
   const [sortBy, setSortBy] =
     useState("newest");
@@ -27,6 +32,10 @@ export default function StrategiesPage() {
   const [categoryFilter,
     setCategoryFilter] =
     useState("All");
+
+  const [showFavorites,
+    setShowFavorites] =
+    useState(false);
 
   const [editing, setEditing] =
     useState<any>(null);
@@ -42,6 +51,7 @@ export default function StrategiesPage() {
   const fetchStrategies =
     async () => {
       try {
+
         const {
           data: { user },
         } =
@@ -53,9 +63,10 @@ export default function StrategiesPage() {
           return;
         }
 
-        const res = await fetch(
-          `/api/strategies?userId=${user.id}`
-        );
+        const res =
+          await fetch(
+            `/api/strategies?userId=${user.id}`
+          );
 
         const json =
           await res.json();
@@ -63,6 +74,7 @@ export default function StrategiesPage() {
         setData(
           json.data || []
         );
+
       } catch (error) {
         console.log(error);
       } finally {
@@ -77,6 +89,7 @@ export default function StrategiesPage() {
   const openEdit = (
     item: any
   ) => {
+
     setEditing(item);
 
     setEditPrompt(
@@ -90,6 +103,7 @@ export default function StrategiesPage() {
 
   const deleteStrategy =
     async (id: string) => {
+
       const confirmed =
         window.confirm(
           "Delete this strategy?"
@@ -98,6 +112,7 @@ export default function StrategiesPage() {
       if (!confirmed) return;
 
       try {
+
         const res =
           await fetch(
             "/api/delete",
@@ -117,6 +132,7 @@ export default function StrategiesPage() {
           await res.json();
 
         if (result.success) {
+
           setData((prev) =>
             prev.filter(
               (item) =>
@@ -127,22 +143,18 @@ export default function StrategiesPage() {
           alert(
             "Strategy Deleted ✅"
           );
-        } else {
-          alert(
-            "Delete Failed"
-          );
         }
+
       } catch (error) {
         console.log(error);
-        alert(
-          "Something went wrong"
-        );
       }
     };
 
   const saveChanges =
     async () => {
+
       try {
+
         const res =
           await fetch(
             "/api/update",
@@ -162,10 +174,11 @@ export default function StrategiesPage() {
             }
           );
 
-        const data =
+        const result =
           await res.json();
 
-        if (data.success) {
+        if (result.success) {
+
           setData((prev) =>
             prev.map((item) =>
               item.id ===
@@ -181,12 +194,58 @@ export default function StrategiesPage() {
             )
           );
 
+          setEditing(null);
+
           alert(
             "Updated Successfully ✅"
           );
-
-          setEditing(null);
         }
+
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+  const toggleFavorite =
+    async (item: any) => {
+
+      try {
+
+        const res =
+          await fetch(
+            "/api/update",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body: JSON.stringify({
+                id: item.id,
+                favorite:
+                  !item.favorite,
+              }),
+            }
+          );
+
+        const result =
+          await res.json();
+
+        if (result.success) {
+
+          setData((prev) =>
+            prev.map((s) =>
+              s.id === item.id
+                ? {
+                    ...s,
+                    favorite:
+                      !s.favorite,
+                  }
+                : s
+            )
+          );
+        }
+
       } catch (error) {
         console.log(error);
       }
@@ -207,9 +266,15 @@ export default function StrategiesPage() {
         : item.category ===
           categoryFilter;
 
+    const matchFavorite =
+      showFavorites
+        ? item.favorite
+        : true;
+
     return (
       matchSearch &&
-      matchCategory
+      matchCategory &&
+      matchFavorite
     );
   });
 
@@ -218,317 +283,407 @@ const sortedStrategies = [
 ];
 
 if (sortBy === "score") {
+
   sortedStrategies.sort(
     (a, b) =>
       b.score - a.score
   );
+
 }
 
 if (sortBy === "winrate") {
+
   sortedStrategies.sort(
     (a, b) =>
       b.winrate -
       a.winrate
   );
+
 }
+
+if (sortBy === "newest") {
+
+  sortedStrategies.reverse();
+
+}
+
+if (sortBy === "oldest") {
+
+  sortedStrategies.sort(
+    (a, b) =>
+      Number(a.id) -
+      Number(b.id)
+  );
+
+}
+
 return (
   <>
-    <div className="flex min-h-screen bg-gray-100">
-      <Sidebar />
+  <div className="flex min-h-screen bg-gray-100">
 
-      <div className="flex-1">
-        <Topbar email="" />
+  <Sidebar />
 
-        <div className="p-8">
+  <div className="flex-1">
 
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">
-              Saved Strategies
-            </h1>
+    <Topbar email="" />
 
-            <div className="bg-orange-100 text-orange-600 px-4 py-2 rounded-xl font-semibold">
-              {filteredStrategies.length} Strategies
-            </div>
-          </div>
+    <div className="p-8">
 
-          <div className="mb-6">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) =>
-                setSearch(e.target.value)
-              }
-              placeholder="Search BTC, ETH, Gold..."
-              className="
-                w-full
-                border
-                rounded-2xl
-                p-4
-                bg-white
-                focus:outline-none
-                focus:border-orange-500
-              "
-            />
-          </div>
-          <div className="mb-6 flex gap-4">
+      <div className="flex justify-between items-center mb-6">
 
-  <select
-    value={categoryFilter}
-    onChange={(e) =>
-      setCategoryFilter(e.target.value)
-    }
-    className="
-      flex-1
-      border
-      rounded-2xl
-      p-4
-      bg-white
-    "
-  >
-    <option value="All">
-      All Categories
-    </option>
+        <h1 className="text-3xl font-bold">
+          Saved Strategies
+        </h1>
 
-    <option value="Crypto">
-      Crypto
-    </option>
-
-    <option value="Forex">
-      Forex
-    </option>
-
-    <option value="Stocks">
-      Stocks
-    </option>
-
-    <option value="Gold">
-      Gold
-    </option>
-
-    <option value="Options">
-      Options
-    </option>
-  </select>
-
-  <select
-    value={sortBy}
-    onChange={(e) =>
-      setSortBy(e.target.value)
-    }
-    className="
-      flex-1
-      border
-      rounded-2xl
-      p-4
-      bg-white
-    "
-  >
-    <option value="newest">
-      Newest First
-    </option>
-
-    <option value="oldest">
-      Oldest First
-    </option>
-
-    <option value="score">
-      Highest Score
-    </option>
-
-    <option value="winrate">
-      Highest Winrate
-    </option>
-  </select>
-
-</div>
-<div className="grid gap-4">
-
-  {sortedStrategies.map((item) => (
-
-    <div
-      key={item.id}
-      className="
-        bg-white
-        p-6
-        rounded-3xl
-        shadow-lg
-        border
-        hover:shadow-xl
-        transition
-      "
-    >
-
-      <div className="flex justify-between items-start">
-
-        <div className="flex gap-3 flex-wrap">
-
-          <span className="bg-green-100 px-3 py-1 rounded-lg">
-            Score {item.score}
-          </span>
-
-          <span className="bg-blue-100 px-3 py-1 rounded-lg">
-            Winrate {item.winrate}%
-          </span>
-
-          <span className="bg-purple-100 px-3 py-1 rounded-lg">
-            {item.category || "General"}
-          </span>
-
-        </div>
-
-        <div className="flex gap-2">
-
-          <Link
-            href={`/strategies/${item.id}`}
-            className="
-              bg-orange-500
-              hover:bg-orange-600
-              text-white
-              px-4
-              py-2
-              rounded-lg
-            "
-          >
-            View
-          </Link>
-
-          <button
-            onClick={() =>
-              openEdit(item)
-            }
-            className="
-              bg-yellow-500
-              hover:bg-yellow-600
-              text-white
-              px-4
-              py-2
-              rounded-lg
-            "
-          >
-            Edit
-          </button>
-
-          <button
-            onClick={() =>
-              deleteStrategy(item.id)
-            }
-            className="
-              bg-red-500
-              hover:bg-red-600
-              text-white
-              px-4
-              py-2
-              rounded-lg
-            "
-          >
-            Delete
-          </button>
-
+        <div className="bg-orange-100 text-orange-600 px-4 py-2 rounded-xl font-semibold">
+          {sortedStrategies.length} Strategies
         </div>
 
       </div>
 
-      <p className="font-semibold mt-4 mb-2">
-        {item.prompt}
-      </p>
+      <div className="mb-6">
 
-      <div className="bg-gray-100 p-4 rounded-xl whitespace-pre-wrap">
-        {item.strategy}
+        <input
+          type="text"
+          value={search}
+          onChange={(e) =>
+            setSearch(e.target.value)
+          }
+          placeholder="Search BTC, ETH, Gold..."
+          className="
+            w-full
+            border
+            rounded-2xl
+            p-4
+            bg-white
+            focus:outline-none
+            focus:border-orange-500
+          "
+        />
+
+      </div>
+
+      <div className="mb-6 flex gap-4">
+
+        <select
+          value={categoryFilter}
+          onChange={(e) =>
+            setCategoryFilter(
+              e.target.value
+            )
+          }
+          className="
+            flex-1
+            border
+            rounded-2xl
+            p-4
+            bg-white
+          "
+        >
+
+          <option value="All">
+            All Categories
+          </option>
+
+          <option value="Crypto">
+            Crypto
+          </option>
+
+          <option value="Forex">
+            Forex
+          </option>
+
+          <option value="Stocks">
+            Stocks
+          </option>
+
+          <option value="Gold">
+            Gold
+          </option>
+
+          <option value="Options">
+            Options
+          </option>
+
+        </select>
+
+        <select
+          value={sortBy}
+          onChange={(e) =>
+            setSortBy(
+              e.target.value
+            )
+          }
+          className="
+            flex-1
+            border
+            rounded-2xl
+            p-4
+            bg-white
+          "
+        >
+
+          <option value="newest">
+            Newest First
+          </option>
+
+          <option value="oldest">
+            Oldest First
+          </option>
+
+          <option value="score">
+            Highest Score
+          </option>
+
+          <option value="winrate">
+            Highest Winrate
+          </option>
+
+        </select>
+
+        <button
+          onClick={() =>
+            setShowFavorites(
+              !showFavorites
+            )
+          }
+          className="
+            bg-yellow-500
+            hover:bg-yellow-600
+            text-white
+            px-6
+            rounded-2xl
+          "
+        >
+          {showFavorites
+            ? "All"
+            : "Favorites"}
+        </button>
+
+      </div>
+
+      {loading && (
+
+        <div className="bg-white p-6 rounded-2xl shadow">
+          Loading...
+        </div>
+
+      )}
+
+      {!loading &&
+        sortedStrategies.length === 0 && (
+
+          <div className="bg-white p-6 rounded-2xl shadow text-center text-gray-500">
+            No Strategies Found
+          </div>
+
+      )}
+
+      <div className="grid gap-4">
+        {sortedStrategies.map((item) => (
+
+  <div
+    key={item.id}
+    className="
+      bg-white
+      p-6
+      rounded-3xl
+      shadow-lg
+      border
+      hover:shadow-xl
+      transition
+    "
+  >
+
+    <div className="flex justify-between items-start">
+
+      <div className="flex gap-3 flex-wrap">
+
+        <span className="bg-green-100 px-3 py-1 rounded-lg">
+          Score {item.score}
+        </span>
+
+        <span className="bg-blue-100 px-3 py-1 rounded-lg">
+          Winrate {item.winrate}%
+        </span>
+
+        <span className="bg-purple-100 px-3 py-1 rounded-lg">
+          {item.category || "General"}
+        </span>
+
+      </div>
+
+      <div className="flex gap-2 flex-wrap">
+
+        <button
+          onClick={() =>
+            toggleFavorite(item)
+          }
+          className="
+            bg-yellow-500
+            hover:bg-yellow-600
+            text-white
+            px-4
+            py-2
+            rounded-lg
+          "
+        >
+          {item.favorite
+            ? "★"
+            : "☆"}
+        </button>
+
+        <Link
+          href={`/strategies/${item.id}`}
+          className="
+            bg-orange-500
+            hover:bg-orange-600
+            text-white
+            px-4
+            py-2
+            rounded-lg
+          "
+        >
+          View
+        </Link>
+
+        <button
+          onClick={() =>
+            openEdit(item)
+          }
+          className="
+            bg-yellow-600
+            hover:bg-yellow-700
+            text-white
+            px-4
+            py-2
+            rounded-lg
+          "
+        >
+          Edit
+        </button>
+
+        <button
+          onClick={() =>
+            deleteStrategy(item.id)
+          }
+          className="
+            bg-red-500
+            hover:bg-red-600
+            text-white
+            px-4
+            py-2
+            rounded-lg
+          "
+        >
+          Delete
+        </button>
+
       </div>
 
     </div>
 
-  ))}
+    <p className="font-semibold mt-4 mb-2">
+      {item.prompt}
+    </p>
 
-</div>
-        </div>
-      </div>
+    <div className="bg-gray-100 p-4 rounded-xl whitespace-pre-wrap">
+      {item.strategy}
     </div>
 
-    {editing && (
+  </div>
 
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+))}
+      
+</div>
 
-        <div className="bg-white w-[700px] rounded-3xl p-8">
+    </div>
+  </div>
+</div>
+{editing && (
 
-          <h2 className="text-2xl font-bold mb-6">
-            Edit Strategy
-          </h2>
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 
-          <input
-            value={editPrompt}
-            onChange={(e) =>
-              setEditPrompt(
-                e.target.value
-              )
-            }
-            className="
-              w-full
-              border
-              p-4
-              rounded-xl
-              mb-4
-            "
-            placeholder="Prompt"
-          />
+    <div className="bg-white w-[700px] rounded-3xl p-8">
 
-          <textarea
-            value={editStrategy}
-            onChange={(e) =>
-              setEditStrategy(
-                e.target.value
-              )
-            }
-            className="
-              w-full
-              border
-              p-4
-              rounded-xl
-              h-60
-              mb-4
-            "
-            placeholder="Strategy"
-          />
+      <h2 className="text-2xl font-bold mb-6">
+        Edit Strategy
+      </h2>
 
-          <div className="flex gap-3">
+      <input
+        value={editPrompt}
+        onChange={(e) =>
+          setEditPrompt(
+            e.target.value
+          )
+        }
+        className="
+          w-full
+          border
+          p-4
+          rounded-xl
+          mb-4
+        "
+        placeholder="Prompt"
+      />
 
-            <button
-              onClick={saveChanges}
-              className="
-                bg-green-500
-                hover:bg-green-600
-                text-white
-                px-6
-                py-3
-                rounded-xl
-              "
-            >
-              Save Changes
-            </button>
+      <textarea
+        value={editStrategy}
+        onChange={(e) =>
+          setEditStrategy(
+            e.target.value
+          )
+        }
+        className="
+          w-full
+          border
+          p-4
+          rounded-xl
+          h-60
+          mb-4
+        "
+        placeholder="Strategy"
+      />
 
-            <button
-              onClick={() =>
-                setEditing(null)
-              }
-              className="
-                bg-gray-500
-                hover:bg-gray-600
-                text-white
-                px-6
-                py-3
-                rounded-xl
-              "
-            >
-              Cancel
-            </button>
+      <div className="flex gap-3">
 
-          </div>
+        <button
+          onClick={saveChanges}
+          className="
+            bg-green-500
+            hover:bg-green-600
+            text-white
+            px-6
+            py-3
+            rounded-xl
+          "
+        >
+          Save Changes
+        </button>
 
-        </div>
+        <button
+          onClick={() =>
+            setEditing(null)
+          }
+          className="
+            bg-gray-500
+            hover:bg-gray-600
+            text-white
+            px-6
+            py-3
+            rounded-xl
+          "
+        >
+          Cancel
+        </button>
 
       </div>
 
-    )}
+    </div>
+
+  </div>
+
+)}
 
   </>
 );
