@@ -10,11 +10,13 @@ export async function POST(req: Request) {
   try {
 
     const {
-      id,
-      prompt,
-      strategy,
-      favorite,
-    } = await req.json();
+  id,
+  prompt,
+  strategy,
+  favorite,
+  notes,
+  tags,
+} = await req.json();
 
     const updateData: any = {};
 
@@ -29,6 +31,14 @@ export async function POST(req: Request) {
     if (favorite !== undefined) {
       updateData.favorite = favorite;
     }
+
+    if (notes !== undefined) {
+  updateData.notes = notes;
+}
+
+if (tags !== undefined) {
+  updateData.tags = tags;
+}
 
     const { error } = await supabase
       .from("strategies")
